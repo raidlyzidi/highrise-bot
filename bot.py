@@ -1,6 +1,24 @@
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from highrise import BaseBot
 from highrise.models import SessionMetadata, User
 
+# --- 1. خادم وهمي لمنع توقف Render المجاني ---
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is active")
+
+def run_dummy_server():
+    server = HTTPServer(('0.0.0.0', 10000), DummyHandler)
+    server.serve_forever()
+
+# تشغيل الخادم في الخلفية
+threading.Thread(target=run_dummy_server, daemon=True).start()
+
+
+# --- 2. كود البوت الأساسي ---
 class Bot(BaseBot):
     
     DANCES = {
